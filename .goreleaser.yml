@@ -1,0 +1,24 @@
+project_name: node-sd
+builds:
+  - binary: node-sd
+    main: main.go
+    goos:
+      - linux
+    goarch:
+      - "amd64"
+      - "arm"
+      - "arm64"
+    goarm:
+      - "6"
+      - "7"
+    flags: -a
+    tags:
+     - netgo
+     - osusergo
+     - static_build
+archives:
+  - id: tarball
+    builds:
+      - "node-sd"
+    format: "tar.gz"
+    wrap_in_directory: true
