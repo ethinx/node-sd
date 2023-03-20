@@ -26,12 +26,17 @@ type ServiceDiscover struct {
 	Logger   zerolog.Logger
 }
 
+type Instance struct {
+	IP     string         `json:"ip"`
+	Status InstanceStatus `json:"status"`
+}
+
 type InstanceStatus struct {
 	IP string `json:"ip"`
 }
 
 type RepoInfo struct {
-	Instances map[string]InstanceStatus
+	Instances map[string]Instance
 }
 
 type PromTarget struct {
@@ -59,17 +64,21 @@ func (sd *ServiceDiscover) GetInstances(repo string) []string {
 	}
 
 	isExists := map[string]bool{}
-	for _, status := range ri.Instances {
-		ipAddr, _ := netip.ParseAddr(status.IP)
+	for _, instance := range ri.Instances {
+		if instance.Status.IP == "" {
+			continue
+		}
+
+		ipAddr, _ := netip.ParseAddr(instance.Status.IP)
 		if ipAddr.Is6() {
-			if ok := isExists[status.IP]; !ok {
-				instances = append(instances, fmt.Sprintf("[%s]:%s", status.IP, defaultNodePort))
-				isExists[status.IP] = true
+			if ok := isExists[instance.Status.IP]; !ok {
+				instances = append(instances, fmt.Sprintf("[%s]:%s", instance.Status.IP, defaultNodePort))
+				isExists[instance.Status.IP] = true
 			}
 		} else {
-			if ok := isExists[status.IP]; !ok {
-				instances = append(instances, fmt.Sprintf("%s:%s", status.IP, defaultNodePort))
-				isExists[status.IP] = true
+			if ok := isExists[instance.Status.IP]; !ok {
+				instances = append(instances, fmt.Sprintf("%s:%s", instance.Status.IP, defaultNodePort))
+				isExists[instance.Status.IP] = true
 			}
 		}
 	}
