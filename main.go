@@ -14,9 +14,10 @@ import (
 )
 
 var (
-	pipyRepoAddr    string
-	defaultNodePort string
-	sdPort          string
+	pipyRepoAddr     string
+	defaultNodePort  string
+	sdPort           string
+	repoPrefixFilter string
 )
 
 type ServiceDiscover struct {
@@ -99,6 +100,9 @@ func (sd *ServiceDiscover) Update() {
 	repoList := strings.Split(string(body), "\n")
 	repoInfo := make(map[string][]string)
 	for _, repo := range repoList {
+		if !strings.HasPrefix(repo, repoPrefixFilter) {
+			continue
+		}
 		instances := sd.GetInstances(repo)
 		if len(instances) == 0 {
 			continue
@@ -128,6 +132,7 @@ func main() {
 	flag.StringVar(&pipyRepoAddr, "repo", "", "pipy repo addr")
 	flag.StringVar(&defaultNodePort, "node-port", "9100", "the port of node exporter")
 	flag.StringVar(&sdPort, "port", "9111", "the port of the service discover")
+	flag.StringVar(&repoPrefixFilter, "repo-prefix-filter", "", "filter nodes of the repo which starts with the prefix")
 	flag.Parse()
 
 	sd := &ServiceDiscover{
